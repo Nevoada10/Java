@@ -1,0 +1,109 @@
+/*
+ * IntegersOperationsTest.java 9 Sept 2023
+ *
+ *
+ * \u00A9 Copyright 2023 Joan S�culi
+ * Email: jseculi@escoladeltreball.org
+ *
+ * This is free software, licensed under the GNU General Public License v3.
+ * See http://www.gnu.org/licenses/gpl.html for more information.
+ */
+package A004sequentialestructure0;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class RealsOperationsTest {
+
+	static RealsOperations rO;
+	
+	@BeforeAll
+	static void setUpBeforeClass() throws Exception {
+		rO = new RealsOperations();
+	}
+
+	@AfterAll
+	static void tearDownAfterClass() throws Exception {
+		
+	}
+
+	@BeforeEach
+	void setUp() throws Exception {
+	}
+
+	@AfterEach
+	void tearDown() throws Exception {
+	}
+
+	@Test
+	@Order(1) 
+	void testAdd() {
+		assertEquals(11.33, rO.add(4.55, 6.78), 0.01);
+		assertEquals(2.00, rO.add(-4.55, 6.55), 0.01);
+		assertEquals(36928.6164, rO.add(1250.3444, 35678.272), 0.0001);
+		
+		assertEquals(3.6931E11, rO.add(1.253E10, 3.5678E11));
+		assertEquals(4.81E10f, rO.add(1.25E10f, 3.56E10f), 0.01E10f);
+
+	}
+	@Test
+	@Order(2) 
+	void testSubtract() {
+		assertEquals(-2.23, rO.subtract(4.55, 6.78), 0.01);
+		assertEquals(-11.33, rO.subtract(-4.55, 6.78), 0.01);
+		assertEquals(-34427.9276, rO.subtract(1250.3444, 35678.272), 0.0001);
+
+	}
+	@Test
+	@Order(3) 
+	void testMultiply() {
+		assertEquals(30.849, rO.multiply(4.55, 6.78), 0.001);
+		assertEquals(-30.849, rO.multiply(-4.55, 6.78), 0.01);
+		assertEquals(44610127.596877, rO.multiply(1250.3444, 35678.272), 0.000001E8);
+
+	}
+	@Test
+	@Order(4) 
+	void testDivide() {
+		assertEquals(10.125, rO.divide(40.5, 4), 0.001);
+		assertEquals(-6.667, rO.divide(-40, 6), 0.001);
+		assertEquals(2973.1667, rO.divide(35678, 12), 0.001);
+
+	}
+
+	@Test
+	@Order(5) 
+	void testPower() {
+		assertEquals(2690420.0625, rO.power(40.5, 4), 1.0001);
+		assertEquals(-8242.408, rO.power(-20.2, 3), 0.001);
+		assertEquals(59604.644775391, rO.power(2.5, 12), 0.000000001);
+		
+		assertEquals(1, rO.power(100, 0));
+
+	}
+	@Test
+	@Order(6) 
+	void testMaximum() {
+		assertEquals(40.55, rO.maximum(40.55, 4.67));
+		assertEquals(6.78, rO.maximum(-20.2, 6.78));
+		assertEquals(12.76, rO.maximum(2.5, 12.76));
+
+	}
+	@Test
+	@Order(7) 
+	void testMinimum() {
+		assertEquals(4.67, rO.minimum(40.55, 4.67));
+		assertEquals(-20.2, rO.minimum(-20.2, 6.78));
+		assertEquals(2.5, rO.minimum(2.5, 12.76));
+
+	}
+	
+}
