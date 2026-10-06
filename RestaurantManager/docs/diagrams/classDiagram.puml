@@ -1,0 +1,417 @@
+@startuml CKU Class Diagram
+!pragma layout smetana
+set namespaceSeparator ::
+skinparam packageStyle rectangle
+
+' CKU current architecture (rewritten to match src/* as of 2026-05-26)
+
+package "model.enums" {
+  enum Role {
+    MANAGER
+    WAITER
+    CUSTOMER
+  }
+
+  enum OrderStatus {
+    OPEN
+    CANCELLED
+    PAID
+  }
+
+  enum ReservationStatus {
+    PENDING
+    ACTIVE
+    CANCELLED
+    COMPLETED
+    FRAUDULENT
+    EXPIRED
+  }
+
+  enum Allergen {
+    GLUTEN
+    LACTOSE
+    NUTS
+    SHELLFISH
+    EGG
+    SOY
+    FISH
+  }
+
+  enum Category {
+    STARTER
+    MAIN
+    DESSERT
+    DRINK
+    SIDE
+  }
+}
+
+package "model.user" {
+  class User {
+    # id: String
+    # name: String
+    # password: String
+    # role: Role
+    + getId(): String
+    + getName(): String
+    + getRole(): Role
+    + getPassword(): String
+  }
+
+  class Manager {
+    + addDish(dish: Dish): boolean
+    + listDishes(): List<Dish>
+    + deleteDish(dishName: String): boolean
+  }
+
+  class Waiter {
+    + Waiter(id: String, name: String, password: String, role: Role)
+    + toString(): String
+  }
+
+  class Customer {
+    - allergens: Set<Allergen>
+    + getAllergens(): Set<Allergen>
+  }
+}
+
+package "model.table" {
+  class Shift {
+    + LUNCH1: Shift
+    + LUNCH2: Shift
+    + DINNER1: Shift
+    + DINNER2: Shift
+    + getId(): String
+    + getStartTime(): LocalTime
+    + getEndTime(): LocalTime
+    + overlaps(other: Shift): boolean
+  }
+
+  class Table {
+    - id: String
+    - capacity: int
+    - bookedShifts: Set<Shift>
+    + canAccommodate(numSeats: int): boolean
+    + bookShift(numSeats: int, shift: Shift): boolean
+    + removeBookedShift(shift: Shift): boolean
+  }
+
+  class Reservation {
+    - id: String
+    - customer: Customer
+    - table: Table
+    - numSeats: int
+    - shift: Shift
+    - date: LocalDate
+    - status: ReservationStatus
+    + getStatus(): ReservationStatus
+    + setStatusFromPersistence(status: ReservationStatus): void
+    + cancel(): boolean
+    + confirm(): boolean
+    + expire(): boolean
+  }
+}
+
+package "model.dish" {
+  class Dish {
+    - name: String
+    - price: double
+    - allergens: Set<Allergen>
+    - category: Category
+    + getName(): String
+    + getPrice(): double
+    + getCategory(): Category
+    + getAllergens(): Set<Allergen>
+    + containsAllergen(allergen: Allergen): boolean
+  }
+}
+
+package "model.menu" {
+  class Menu {
+    - name: String
+    - price: double
+    - courses: List<Dish>
+    + getName(): String
+    + getPrice(): double
+    + getCourses(): List<Dish>
+    + getTotalAllergens(): Set<Allergen>
+  }
+}
+
+package "model.order" {
+  class Order {
+    - id: String
+    - reservationId: String
+    - table: Table
+    - items: List<OrderItem>
+    - status: OrderStatus
+    + addItem(item: OrderItem): void
+    + getTotal(): double
+    + markPaid(): void
+    + isModifiable(): boolean
+  }
+
+  class OrderItem {
+    - dish: Dish
+    - menu: Menu
+    - chosenCourses: List<Dish>
+    - quantity: int
+    - supplement: String
+    + getSubtotal(): double
+    + isDish(): boolean
+    + isMenu(): boolean
+  }
+}
+
+package "jdbc" {
+  class JdbcConnectionFactory {
+    + connect(): Connection
+  }
+
+  class JdbcTablesRepository {
+    + loadAll(): List<Table>
+    + saveAll(tables: List<Table>): void
+  }
+
+  class JdbcReservationsRepository {
+    + loadAll(tables: List<Table>): List<Reservation>
+    + saveAll(reservations: List<Reservation>): void
+    + updateReservationStatus(reservationId: String, status: ReservationStatus): boolean
+  }
+
+  class JdbcDishRepository {
+    + findAll(): List<Dish>
+    + saveAll(dishes: List<Dish>): void
+    + findByAllergen(allergen: Allergen): List<Dish>
+    + findByCategory(category: Category): List<Dish>
+    + findSafeForAllergens(allergens: Set<Allergen>): List<Dish>
+    + deleteByName(dishName: String): boolean
+  }
+
+  class JdbcMenusRepository {
+    + loadAll(dishes: List<Dish>): List<Menu>
+    + saveAll(menus: List<Menu>): void
+    + deleteByName(menuName: String): boolean
+  }
+
+  class JdbcOrdersRepository {
+    + loadAll(tables: List<Table>, dishes: List<Dish>, menus: List<Menu>): List<Order>
+    + saveAll(orders: List<Order>): void
+    + addItemToOrder(orderId: String, item: OrderItem): boolean
+    + updateOrderStatus(orderId: String, status: OrderStatus): boolean
+    + getDailyRevenue(): double
+  }
+}
+
+package "model.service" {
+  class LdapUserRepositoryProduction {
+    + findByUid(uid: String): Optional<User>
+    + findAll(): List<User>
+    + findCustomerAllergensByUid(uid: String): Set<Allergen>
+    + authenticate(uid: String, password: String): boolean
+    + saveUser(user: User): boolean
+    + deleteUser(uid: String): boolean
+  }
+
+  class CustomerService {
+    + autoregister(id: String, name: String, password: String, allergens: Set<Allergen>): boolean
+  }
+
+  class ReservationManager {
+    + addReservation(reservation: Reservation): ReservationResult
+    + cancelReservation(id: String): ReservationResult
+    + getAvailableTables(shift: Shift, date: LocalDate, seats: int): List<Table>
+    + saveReservations(): void
+    + getReservations(): List<Reservation>
+    + listReservations(): List<Reservation>
+    + listTables(): List<Table>
+    + addUser(user: User): boolean
+    + removeUser(userId: String): boolean
+    + listUsers(): List<User>
+    + getDailyRevenue(): double
+  }
+
+  class WaiterService {
+    + validateOrderCreationForTable(tableId: String): OrderResult
+    + addOrder(order: Order): OrderResult
+    + listTables(): List<Table>
+    + listTablesWithContext(date: LocalDate, shift: Shift): List<String>
+    + listOrders(): List<Order>
+    + listDishes(): List<Dish>
+    + listSafeDishesForTable(tableId: String): List<Dish>
+    + markPaid(orderId: String): OrderResult
+    + addDish(dish: Dish): DishResult
+    + reassignTable(reservationId: String, newTableId: String): TableReassignmentResult
+    + cancelExpiredReservations(): void
+    + createMenu(menu: Menu): MenuResult
+    + listMenusFromDatabase(): List<Menu>
+    + deleteMenu(menuName: String): MenuResult
+    + listMenus(): List<Menu>
+    + modifyOrder(orderId: String, item: OrderItem): OrderResult
+  }
+
+  enum ReservationResult {
+    SUCCESS
+    INVALID_RESERVATION
+    NO_CAPACITY
+    PAST_DATE
+    SHIFT_CONFLICT
+    NOT_FOUND
+    NOT_MODIFIABLE
+    PERSISTENCE_ERROR
+  }
+
+  enum OrderResult {
+    SUCCESS
+    INVALID_INPUT
+    TABLE_NOT_FOUND
+    RESERVATION_NOT_FOUND
+    RESERVATION_NOT_ACTIVE
+    EMPTY_ORDER
+    DUPLICATE_ORDER
+    RESERVATION_ALREADY_HAS_ORDER
+    ORDER_NOT_FOUND
+    NOT_MODIFIABLE
+    ALREADY_PAID
+    PERSISTENCE_ERROR
+  }
+
+  enum DishResult {
+    SUCCESS
+    INVALID_DISH
+    DUPLICATE_DISH
+  }
+
+  enum TableReassignmentResult {
+    SUCCESS
+    INVALID_INPUT
+    RESERVATION_NOT_FOUND
+    RESERVATION_NOT_MODIFIABLE
+    DATE_NOT_TODAY
+    TABLE_NOT_FOUND
+    NO_CAPACITY
+    SHIFT_CONFLICT
+  }
+
+  enum MenuResult {
+    SUCCESS
+    INVALID_MENU
+    DUPLICATE_MENU
+    MENU_NOT_FOUND
+  }
+}
+
+package "ui" {
+  class ConsoleUi {
+    + drawBox(title: String, options: List<String>): void
+    + drawHeader(text: String): void
+    + printSuccess(msg: String): void
+    + printError(msg: String): void
+    + printInfo(msg: String): void
+  }
+
+  class CustomerConsole {
+    + run(user: User, rm: ReservationManager): void
+  }
+
+  class ManagerConsole {
+    + run(user: User, rm: ReservationManager): void
+  }
+
+  class WaiterConsole {
+    + run(user: User, rm: ReservationManager): void
+  }
+}
+
+class Main {
+  + main(args: String[]): void
+}
+
+' Inheritance
+Manager --|> User
+Waiter --|> User
+Customer --|> User
+
+' Core model associations
+Reservation --> Customer
+Reservation --> Table
+Reservation --> Shift
+Order --> Table
+Order *-- OrderItem
+OrderItem --> Dish
+OrderItem --> Menu
+Menu *-- Dish
+
+' Enum dependencies
+User ..> Role
+Dish ..> Category
+Dish ..> Allergen
+Customer ..> Allergen
+Reservation ..> ReservationStatus
+Order ..> OrderStatus
+
+' Service dependencies
+CustomerService ..> LdapUserRepositoryProduction
+CustomerService ..> Customer
+LdapUserRepositoryProduction ..> User
+LdapUserRepositoryProduction ..> Manager
+LdapUserRepositoryProduction ..> Waiter
+LdapUserRepositoryProduction ..> Customer
+
+ReservationManager ..> JdbcTablesRepository
+ReservationManager ..> JdbcReservationsRepository
+ReservationManager ..> JdbcOrdersRepository
+ReservationManager ..> JdbcDishRepository
+ReservationManager ..> JdbcMenusRepository
+ReservationManager *-- Reservation
+
+WaiterService ..> ReservationManager
+WaiterService ..> JdbcOrdersRepository
+WaiterService ..> JdbcReservationsRepository
+WaiterService ..> JdbcDishRepository
+WaiterService ..> JdbcMenusRepository
+WaiterService ..> LdapUserRepositoryProduction
+
+' JDBC dependencies
+JdbcTablesRepository ..> Table
+JdbcReservationsRepository ..> Reservation
+JdbcReservationsRepository ..> Table
+JdbcDishRepository ..> Dish
+JdbcDishRepository ..> Allergen
+JdbcDishRepository ..> Category
+JdbcMenusRepository ..> Menu
+JdbcMenusRepository ..> Dish
+JdbcOrdersRepository ..> Order
+JdbcOrdersRepository ..> OrderItem
+JdbcOrdersRepository ..> Table
+JdbcOrdersRepository ..> Dish
+JdbcOrdersRepository ..> Menu
+
+' UI dependencies
+Main ..> CustomerConsole
+Main ..> ManagerConsole
+Main ..> WaiterConsole
+Main ..> ReservationManager
+Main ..> CustomerService
+Main ..> LdapUserRepositoryProduction
+
+CustomerConsole ..> ReservationManager
+CustomerConsole ..> LdapUserRepositoryProduction
+CustomerConsole ..> ConsoleUi
+
+ManagerConsole ..> ReservationManager
+ManagerConsole ..> WaiterService
+ManagerConsole ..> ConsoleUi
+
+WaiterConsole ..> WaiterService
+WaiterConsole ..> ReservationManager
+WaiterConsole ..> ConsoleUi
+
+legend left
+  Inheritance: --|>
+  Dependency: ..>
+  Association: -->
+  Composition: *--
+endlegend
+
+@enduml

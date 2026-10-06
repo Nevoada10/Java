@@ -1,0 +1,109 @@
+@startuml Use Case Diagram - CKU Restaurant Management System
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor Visitor as V
+actor Customer as C
+actor Waiter as W
+actor Manager as M
+
+rectangle "CKU System" {
+  ' === Authentication ===
+  usecase "Log In" as UC_Login
+  usecase "Autoregister Customer" as UC_Autoreg
+
+  ' === Customer actions ===
+  usecase "Make Reservation" as UC_MakeReservation
+  usecase "Cancel Reservation" as UC_CancelReservation
+  usecase "See My Reservations" as UC_SeeMyReservations
+  usecase "See My Allergies" as UC_SeeMyAllergies
+
+  ' === Waiter actions ===
+  usecase "Manage Tables" as UC_ManageTables
+  usecase "List Tables" as UC_ListTables
+  usecase "List Dishes" as UC_ListDishes
+  usecase "List Table Orders" as UC_ListTableOrders
+  usecase "Create Order" as UC_CreateOrder
+  usecase "Modify Order" as UC_ModifyOrder
+  usecase "Pay Orders" as UC_PayOrders
+  usecase "Create Menu" as UC_CreateMenu
+  usecase "Delete Menu" as UC_DeleteMenu
+
+  ' === Manager actions ===
+  usecase "Add User" as UC_AddUser
+  usecase "Remove User" as UC_RemoveUser
+  usecase "List Users" as UC_ListUsers
+  usecase "Get Daily Revenue" as UC_DailyRevenue
+  usecase "List Reservations" as UC_ListReservations
+  usecase "Add Dish" as UC_AddDish
+  usecase "Delete Dish" as UC_DeleteDish
+  usecase "Run SELECT Query" as UC_SelectQuery
+}
+
+' --- Actor connections ---
+V -[#FF4444]-> UC_Autoreg
+
+' Customer = Red (#FF4444)
+C -[#FF4444]-> UC_Login
+C -[#FF4444]-> UC_MakeReservation
+C -[#FF4444]-> UC_CancelReservation
+C -[#FF4444]-> UC_SeeMyReservations
+C -[#FF4444]-> UC_SeeMyAllergies
+
+' Waiter = Green (#3fb950)
+W -[#3fb950]-> UC_Login
+W -[#3fb950]-> UC_ManageTables
+W -[#3fb950]-> UC_ListTables
+W -[#3fb950]-> UC_ListDishes
+W -[#3fb950]-> UC_ListTableOrders
+W -[#3fb950]-> UC_CreateOrder
+W -[#3fb950]-> UC_ModifyOrder
+W -[#3fb950]-> UC_PayOrders
+W -[#3fb950]-> UC_CreateMenu
+W -[#3fb950]-> UC_DeleteMenu
+
+' Manager = Blue (#58a6ff)
+M -[#58a6ff]-> UC_Login
+M -[#58a6ff]-> UC_AddUser
+M -[#58a6ff]-> UC_RemoveUser
+M -[#58a6ff]-> UC_ListUsers
+M -[#58a6ff]-> UC_DailyRevenue
+M -[#58a6ff]-> UC_ListReservations
+M -[#58a6ff]-> UC_AddDish
+M -[#58a6ff]-> UC_DeleteDish
+M -[#58a6ff]-> UC_SelectQuery
+
+' --- <<include>> ---
+UC_MakeReservation ..> UC_Login : <<include>>
+UC_CancelReservation ..> UC_Login : <<include>>
+UC_SeeMyReservations ..> UC_Login : <<include>>
+UC_SeeMyAllergies ..> UC_Login : <<include>>
+
+UC_ManageTables ..> UC_Login : <<include>>
+UC_ListTables ..> UC_Login : <<include>>
+UC_ListDishes ..> UC_Login : <<include>>
+UC_ListTableOrders ..> UC_Login : <<include>>
+UC_CreateOrder ..> UC_Login : <<include>>
+UC_ModifyOrder ..> UC_Login : <<include>>
+UC_PayOrders ..> UC_Login : <<include>>
+UC_CreateMenu ..> UC_Login : <<include>>
+UC_DeleteMenu ..> UC_Login : <<include>>
+
+UC_AddUser ..> UC_Login : <<include>>
+UC_RemoveUser ..> UC_Login : <<include>>
+UC_ListUsers ..> UC_Login : <<include>>
+UC_DailyRevenue ..> UC_Login : <<include>>
+UC_ListReservations ..> UC_Login : <<include>>
+UC_AddDish ..> UC_Login : <<include>>
+UC_DeleteDish ..> UC_Login : <<include>>
+UC_SelectQuery ..> UC_Login : <<include>>
+
+' --- Notes ---
+note right of UC_Autoreg
+  Registration does NOT
+  require prior login
+end note
+
+@enduml

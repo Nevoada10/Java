@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"jdbc"},{"l":"model.dish"},{"l":"model.enums"},{"l":"model.menu"},{"l":"model.order"},{"l":"model.service"},{"l":"model.table"},{"l":"model.user"},{"l":"ui"}];updateSearchResults();

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_server
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: template1
+    ports:
+      - "5432:5432"
+    working_dir: /workspace/sql
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql:/workspace/sql
+
+volumes:
+  pgdata:
+    driver_opts:
+      type: "nfs"
+      o: "addr=172.31.39.149,rw,nfsvers=4,noatime"
+      device: ":/srv/nfs_compartido/postgres_data"

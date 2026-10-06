@@ -1,0 +1,218 @@
+@startuml CKU_Sequence_Diagram
+
+title CKU Restaurant Management System - Real Flow from Main and Consoles
+
+skinparam defaultFontName "JetBrains Mono"
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam SequenceLifeLineBorderColor #30363d
+skinparam SequenceLifeLineBackgroundColor #1c2333
+skinparam SequenceBoxBackgroundColor #0d1117
+skinparam SequenceBoxBorderColor #30363d
+skinparam ParticipantBackgroundColor #1c2333
+skinparam ParticipantBorderColor #30363d
+skinparam ParticipantFontColor #e6edf3
+skinparam ActorBackgroundColor #1c2333
+skinparam ActorBorderColor #58a6ff
+skinparam ActorFontColor #e6edf3
+skinparam ArrowColor #58a6ff
+skinparam NoteBackgroundColor #1f6feb
+skinparam NoteBorderColor #79c0ff
+skinparam NoteFontColor #e6edf3
+skinparam SequenceDividerBackgroundColor #2d2a1a
+skinparam SequenceDividerBorderColor #e3b341
+skinparam SequenceDividerFontColor #e3b341
+
+actor "User" as U
+participant "Main" as MAIN
+participant "LdapUserRepositoryProduction" as LDAP
+participant "CustomerService" as CS
+participant "CustomerConsole" as CC
+participant "WaiterConsole" as WC
+participant "ManagerConsole" as MC
+participant "ReservationManager" as RM
+participant "WaiterService" as WS
+participant "JdbcReservationsRepository" as JRES
+participant "JdbcOrdersRepository" as JORD
+
+== 1) Main Menu Loop ==
+
+loop until user chooses 0
+  U -> MAIN : choose option (0/1/2)
+
+  alt option = 1 (Login)
+    MAIN -> U : ask uid + password
+    MAIN -> LDAP : authenticate(uid, password)
+    LDAP -> LDAP : findByUid(uid) + compare MD5 password
+
+    alt credentials valid
+      LDAP --> MAIN : true
+      MAIN -> LDAP : findByUid(uid)
+      LDAP --> MAIN : Optional<User>
+
+      alt role CUSTOMER
+        MAIN -> CC : run(user, rm)
+      else role WAITER
+        MAIN -> WC : run(user, rm)
+      else role MANAGER
+        MAIN -> MC : run(user, rm)
+      end
+
+    else credentials invalid
+      LDAP --> MAIN : false
+      MAIN --> U : Invalid credentials
+    end
+
+  else option = 2 (Autoregister)
+    MAIN -> U : ask id, name, password, allergens
+    MAIN -> CS : autoregister(id, name, password, allergens)
+    CS -> LDAP : findByUid(id)
+
+    alt uid already exists
+      LDAP --> CS : present
+      CS --> MAIN : false
+      MAIN --> U : Registration failed
+    else uid not found
+      LDAP --> CS : empty
+      CS -> LDAP : saveUser(new Customer(...))
+      LDAP --> CS : boolean
+      CS --> MAIN : boolean
+
+      alt saved
+        MAIN --> U : Registration successful
+      else not saved
+        MAIN --> U : Registration failed
+      end
+    end
+
+  else option = 0
+    MAIN --> U : exit application
+  end
+end
+
+== 2) Customer - Add Reservation ==
+
+U -> CC : choose Make reservation
+CC -> U : ask seats, shift, date
+CC -> RM : getAvailableTables(shift, date, seats)
+RM -> RM : validate capacity + overlap checks
+RM --> CC : List<Table>
+CC --> U : show available tables
+
+U -> CC : choose tableId
+CC -> LDAP : findAll() to locate Customer by uid
+LDAP --> CC : List<User>
+CC -> RM : addReservation(new Reservation(customer, table, seats, shift, date))
+RM -> RM : validate (null/capacity/past/conflict)
+
+alt SUCCESS
+  RM -> JRES : saveAll(reservations)
+  JRES --> RM : persisted
+  RM --> CC : SUCCESS
+  CC --> U : Reservation added successfully
+else INVALID_RESERVATION / NO_CAPACITY / PAST_DATE / SHIFT_CONFLICT
+  RM --> CC : error enum
+  CC --> U : show specific error message
+end
+
+== 3) Customer - Cancel Reservation ==
+
+U -> CC : choose Cancel reservation
+CC -> RM : getReservations()
+RM --> CC : List<Reservation>
+CC --> U : show own reservations
+U -> CC : input reservationId
+CC -> RM : cancelReservation(id)
+
+alt cancellable + persisted
+  RM -> JRES : updateReservationStatus(id, CANCELLED)
+  JRES --> RM : true
+  RM -> RM : reservation.cancel() + removeBookedShift()
+  RM --> CC : SUCCESS
+  CC --> U : Reservation cancelled successfully
+else NOT_FOUND / NOT_MODIFIABLE / PERSISTENCE_ERROR
+  RM --> CC : error enum
+  CC --> U : show specific error message
+end
+
+== 4) Waiter - Create and Pay Order ==
+
+U -> WC : choose Create order
+WC -> WS : validateOrderCreationForTable(tableId)
+WS -> WS : refresh reservations + find active reservation today
+WS -> JORD : loadAll(tables, dishes, menus)
+JORD --> WS : List<Order>
+
+alt precheck SUCCESS
+  WS --> WC : SUCCESS
+  WC -> U : collect items (dish/menu)
+  WC -> WS : listSafeDishesForTable(tableId)
+  WS -> LDAP : findCustomerAllergensByUid(customerId)
+  LDAP --> WS : Set<Allergen>
+  WS --> WC : List<Dish> safe for customer
+
+  WC -> WS : addOrder(order)
+  WS -> JORD : saveAll(orders)
+  JORD --> WS : persisted
+
+  alt reservation was PENDING
+    WS -> JRES : updateReservationStatus(resId, ACTIVE)
+    JRES --> WS : true
+    WS -> RM : saveReservations()
+  end
+
+  WS --> WC : SUCCESS
+  WC --> U : Order added successfully
+else TABLE_NOT_FOUND / RESERVATION_NOT_FOUND / RESERVATION_ALREADY_HAS_ORDER
+  WS --> WC : error enum
+  WC --> U : show specific error message
+end
+
+U -> WC : choose Pay orders
+WC -> WS : markPaid(orderId)
+WS -> WS : verify reservation is ACTIVE + order modifiable
+
+alt payable
+  WS -> JORD : updateOrderStatus(orderId, PAID)
+  JORD --> WS : true
+  WS --> WC : SUCCESS
+  WC --> U : Order marked as paid
+else ORDER_NOT_FOUND / RESERVATION_NOT_ACTIVE / ALREADY_PAID / NOT_MODIFIABLE
+  WS --> WC : error enum
+  WC --> U : show specific error message
+end
+
+== 5) Manager - Key Operations ==
+
+group Add user
+  U -> MC : choose Add user
+  MC -> U : enter id, name, password, role
+  MC -> RM : addUser(user)
+  RM -> LDAP : saveUser(user)
+  LDAP --> RM : boolean
+  RM --> MC : boolean
+  MC --> U : success/failure message
+end
+
+group Remove user
+  U -> MC : choose Remove user
+  MC -> RM : removeUser(userId)
+  RM -> LDAP : deleteUser(userId)
+  LDAP --> RM : boolean
+  RM --> MC : boolean
+  MC --> U : success/failure message
+end
+
+group Daily revenue and reservations
+  U -> MC : choose Daily revenue
+  MC -> RM : getDailyRevenue()
+  RM --> MC : total amount
+  MC --> U : display current revenue
+
+  U -> MC : choose List reservations
+  MC -> RM : listReservations()
+  RM --> MC : List<Reservation>
+  MC --> U : print reservations
+end
+
+@enduml

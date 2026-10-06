@@ -1,0 +1,385 @@
+# ============================================================
+# CKU Restaurant LDAP Structure
+# Base DN: dc=cku,dc=local
+# Description: Complete LDAP structure for CKU Restaurant management system (Copy of real)
+# ============================================================
+
+
+# ------------------------------------------------------------
+# 1. ORGANIZATIONAL UNITS
+# ------------------------------------------------------------
+
+dn: ou=General,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: General
+
+dn: ou=Customers,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Customers
+
+dn: ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Users
+
+dn: ou=Groups,ou=Customers,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Groups
+
+dn: ou=Managers,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Managers
+
+dn: ou=Users,ou=Managers,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Users
+
+dn: ou=Groups,ou=Managers,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Groups
+
+dn: ou=Waiters,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Waiters
+
+dn: ou=Users,ou=Waiters,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Users
+
+dn: ou=Groups,ou=Waiters,dc=cku,dc=local
+objectClass: organizationalUnit
+objectClass: top
+ou: Groups
+
+
+# ------------------------------------------------------------
+# 2. GROUPS
+# ------------------------------------------------------------
+
+dn: cn=Managers,ou=Groups,ou=Managers,dc=cku,dc=local
+objectClass: posixGroup
+objectClass: top
+cn: Managers
+gidNumber: 1000
+
+dn: cn=Waiters,ou=Groups,ou=Waiters,dc=cku,dc=local
+objectClass: posixGroup
+objectClass: top
+cn: Waiters
+gidNumber: 1001
+
+dn: cn=Customers,ou=Groups,ou=Customers,dc=cku,dc=local
+objectClass: posixGroup
+objectClass: top
+cn: Customers
+gidNumber: 1002
+
+# ------------------------------------------------------------
+# 3. MANAGERS
+# ------------------------------------------------------------
+
+dn: cn=manager1,ou=Users,ou=Managers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Marta
+sn: Pujol
+uid: manager1
+uidNumber: 2000
+gidNumber: 1000
+homeDirectory: /home/manager1
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+
+dn: cn=manager2,ou=Users,ou=Managers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Jordi
+sn: Casals
+uid: manager2
+uidNumber: 2001
+gidNumber: 1000
+homeDirectory: /home/manager2
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+
+
+# ------------------------------------------------------------
+# 4. WAITERS
+# ------------------------------------------------------------
+
+dn: cn=waiter1,ou=Users,ou=Waiters,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Marc
+sn: Serra
+uid: waiter1
+uidNumber: 2101
+gidNumber: 1001
+homeDirectory: /home/waiter1
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+
+dn: cn=waiter2,ou=Users,ou=Waiters,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Anna
+sn: Rius
+uid: waiter2
+uidNumber: 2102
+gidNumber: 1001
+homeDirectory: /home/waiter2
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+
+# ------------------------------------------------------------
+# 5. CUSTOMERS (WITH ENUM ALLERGENS)
+# ------------------------------------------------------------
+
+# Customer 1: No allergies
+dn: cn=customer1,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Carla
+sn: Muntaner
+uid: customer1
+uidNumber: 2201
+gidNumber: 1002
+homeDirectory: /home/customer1
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+
+dn: cn=customer2,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Oriol
+sn: Soler
+uid: customer2
+uidNumber: 2202
+gidNumber: 1002
+homeDirectory: /home/customer2
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: GLUTEN
+
+dn: cn=customer3,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Julia
+sn: Pons
+uid: customer3
+uidNumber: 2203
+gidNumber: 1002
+homeDirectory: /home/customer3
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: LACTOSE
+
+dn: cn=customer4,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Roger
+sn: Puig
+uid: customer4
+uidNumber: 2204
+gidNumber: 1002
+homeDirectory: /home/customer4
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: NUTS
+
+dn: cn=customer5,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Claudia
+sn: Roca
+uid: customer5
+uidNumber: 2205
+gidNumber: 1002
+homeDirectory: /home/customer5
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: SHELLFISH
+
+dn: cn=customer6,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Arnau
+sn: Vidal
+uid: customer6
+uidNumber: 2206
+gidNumber: 1002
+homeDirectory: /home/customer6
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: EGG
+
+dn: cn=customer7,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Mar
+sn: Cervera
+uid: customer7
+uidNumber: 2207
+gidNumber: 1002
+homeDirectory: /home/customer7
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: SOY
+
+dn: cn=customer8,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Biel
+sn: Cortes
+uid: customer8
+uidNumber: 2208
+gidNumber: 1002
+homeDirectory: /home/customer8
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: FISH
+
+# Multi-allergic customers
+
+dn: cn=customer9,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Aina
+sn: Ribas
+uid: customer9
+uidNumber: 2209
+gidNumber: 1002
+homeDirectory: /home/customer9
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: GLUTEN,LACTOSE
+
+dn: cn=customer10,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Pol
+sn: Soler
+uid: customer10
+uidNumber: 2210
+gidNumber: 1002
+homeDirectory: /home/customer10
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: GLUTEN,LACTOSE,NUTS
+
+dn: cn=customer11,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Lucas
+sn: Navarro
+uid: customer11
+uidNumber: 2211
+gidNumber: 1002
+homeDirectory: /home/customer11
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: GLUTEN,LACTOSE,NUTS,SHELLFISH
+
+dn: cn=customer12,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Martina
+sn: Ferrer
+uid: customer12
+uidNumber: 2212
+gidNumber: 1002
+homeDirectory: /home/customer12
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: GLUTEN,LACTOSE,NUTS,SHELLFISH,EGG
+
+dn: cn=customer13,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Hugo
+sn: Vidal
+uid: customer13
+uidNumber: 2213
+gidNumber: 1002
+homeDirectory: /home/customer13
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: GLUTEN,LACTOSE,NUTS,SHELLFISH,EGG,SOY
+
+dn: cn=customer14,ou=Users,ou=Customers,dc=cku,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+givenName: Clara
+sn: Roca
+uid: customer14
+uidNumber: 2214
+gidNumber: 1002
+homeDirectory: /home/customer14
+loginShell: /bin/bash
+userPassword:: e01ENX1NOW04R05jOFN1ZUQyVHNWYW5xRWpnPT0=
+description: GLUTEN,LACTOSE,NUTS,SHELLFISH,EGG,SOY,FISH
+
+# ------------------------------------------------------------
+# 6. ASSIGN USERS TO GROUPS
+# ------------------------------------------------------------
+
+# Assignment of users to groups
+
+dn: cn=Managers,ou=Groups,ou=Managers,dc=cku,dc=local
+changetype: modify
+add: memberUid
+memberUid: manager1
+memberUid: manager2
+
+dn: cn=Waiters,ou=Groups,ou=Waiters,dc=cku,dc=local
+changetype: modify
+add: memberUid
+memberUid: waiter1
+memberUid: waiter2
+memberUid: waiter3
+memberUid: waiter4
+memberUid: waiter5
+
+dn: cn=Customers,ou=Groups,ou=Customers,dc=cku,dc=local
+changetype: modify
+add: memberUid
+memberUid: customer1
+memberUid: customer2
+memberUid: customer3
+memberUid: customer4
+memberUid: customer5
+memberUid: customer6
+memberUid: customer7
+memberUid: customer8
+memberUid: customer9
+memberUid: customer10
+memberUid: customer11
+memberUid: customer12
+memberUid: customer13
+memberUid: customer14

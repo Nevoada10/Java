@@ -1,0 +1,112 @@
+@startuml CKU Flux Diagram
+
+title CKU Restaurant Management System - User Journey
+
+skinparam defaultFontName "JetBrains Mono"
+skinparam ActivityBackgroundColor #1c2333
+skinparam ActivityBorderColor #30363d
+skinparam ActivityFontColor #e6edf3
+skinparam ArrowColor #58a6ff
+skinparam DiamondBackgroundColor #2d2a1a
+skinparam DiamondBorderColor #e3b341
+skinparam DiamondFontColor #e6edf3
+skinparam NoteBackgroundColor #1f6feb
+skinparam NoteBorderColor #79c0ff
+skinparam NoteFontColor #e6edf3
+skinparam PartitionBorderColor #30363d
+skinparam PartitionFontColor #8b949e
+skinparam PartitionBackgroundColor #0d1117
+
+start
+
+:Application starts;
+
+repeat
+  :Show main menu;
+  note right
+    0. Exit
+    1. Login
+    2. Customer autoregistration
+  end note
+
+  if (Selected option is Exit?) then (yes)
+    :Close application;
+    stop
+  else (no)
+    if (Selected option is Login?) then (yes)
+      :Ask for user ID and password;
+      :Validate credentials;
+
+      if (Credentials valid?) then (yes)
+        :Load user profile;
+
+        if (User role is Customer?) then (yes)
+          partition "Customer Session" {
+            repeat
+              :Customer actions;
+              note right
+                - Make reservation
+                - Cancel reservation
+                - See reservations
+                - See allergies
+              end note
+            repeat while (Log out?) is (no)
+            :Perform logout;
+          }
+
+        elseif (User role is Waiter?) then (yes)
+          partition "Waiter Session" {
+            repeat
+              :Waiter actions;
+              note right
+                - Manage/list tables
+                - List dishes and orders
+                - Create/modify/pay orders
+                - Create/delete menus
+              end note
+            repeat while (Log out?) is (no)
+            :Perform logout;
+          }
+        else (User role is Manager)
+          partition "Manager Session" {
+            repeat
+              :Manager actions;
+              note right
+                - Manage users
+                - See daily revenue
+                - List reservations
+                - Manage dishes
+                - Run SELECT queries
+              end note
+            repeat while (Log out?) is (no)
+            :Perform logout;
+          }
+        endif
+
+        :Return to main menu;
+      else (no)
+        :Show invalid credentials message;
+        :Return to main menu;
+      endif
+
+    else (Autoregister)
+      :Collect new customer data;
+      :Collect optional allergens;
+      :Ask for confirmation;
+
+      if (Confirmed?) then (yes)
+        :Create customer account;
+        :Show success or failure message;
+      else (no)
+        :Cancel registration;
+      endif
+
+      :Return to main menu;
+    endif
+  endif
+
+repeat while (Application not closed?) is (yes)
+
+stop
+
+@enduml
